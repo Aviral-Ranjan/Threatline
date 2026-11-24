@@ -30,3 +30,7 @@ Set `PORT` in the environment to override the default port. The production Expre
 ## Legal data
 
 The platform separates official source references, verified dates and enforceability. Automated strictness scores are intentionally not invented: comparative methodology must be jurisdiction-specific and source-verified.
+
+## Homepage signals
+
+Homepage signal records and AI-style summaries are static, curated sample content in `src/App.jsx`; topic filters search these records locally. Summaries are not generated at runtime and should be checked against linked sources. They are educational, not legal advice.

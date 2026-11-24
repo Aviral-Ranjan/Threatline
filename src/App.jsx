@@ -7,8 +7,8 @@ import {
 } from 'lucide-react';
 
 const navItems = [
-  ['Incidents', 'home'], ['Law Explorer', 'countries'], ['Compare', 'compare'],
-  ['Legislative Tracker', 'legislation'], ['AI & Cybercrime', 'ai']
+  ['Briefings', 'home'], ['Offence Index', 'crimes'], ['Jurisdictions', 'countries'],
+  ['Compare Laws', 'compare'], ['Legislation Watch', 'legislation'], ['AI Threats', 'ai']
 ];
 
 const incidentTopics = ['All signals', 'Ransomware', 'Fraud', 'AI & deepfakes', 'Law enforcement', 'Data breach', 'Cybersecurity'];
@@ -21,6 +21,7 @@ const incidentReports = [
     source: 'Threatline Desk',
     title: 'When ransomware crosses borders, which laws apply?',
     summary: 'A practical briefing on jurisdiction, incident reporting, evidence preservation and cooperation between investigators.',
+    aiSummary: 'Cross-border ransomware raises questions about where an investigation can proceed, which evidence should be preserved and how authorities can cooperate. The applicable rules depend on the countries and facts involved.',
     link: 'https://www.justice.gov/criminal/criminal-ccips',
     image: true
   },
@@ -31,6 +32,7 @@ const incidentReports = [
     source: 'U.S. Department of Justice',
     title: 'Following the money in online fraud investigations',
     summary: 'How investigators and prosecutors approach digital records, payment trails and cross-border evidence.',
+    aiSummary: 'Online fraud investigations may rely on transaction records and other digital evidence. How those records can be obtained or shared depends on the applicable legal process and jurisdiction.',
     link: 'https://www.justice.gov/criminal/criminal-fraud'
   },
   {
@@ -40,6 +42,7 @@ const incidentReports = [
     source: 'Council of Europe',
     title: 'Cross-border evidence requests: a guide to the legal pathways',
     summary: 'An overview of cooperation mechanisms used to preserve and obtain electronic evidence.',
+    aiSummary: 'Preserving or obtaining electronic evidence across borders may require formal cooperation pathways. The route and authority depend on the jurisdictions involved.',
     link: 'https://www.coe.int/en/web/cybercrime'
   },
   {
@@ -49,6 +52,7 @@ const incidentReports = [
     source: 'Federal Trade Commission',
     title: 'Deepfake impersonation and the laws already on the books',
     summary: 'A look at how existing fraud, identity and privacy rules may apply to synthetic voice and video scams.',
+    aiSummary: 'Synthetic voice or video used to impersonate someone may implicate existing fraud, identity or consumer-protection laws. Which rules apply depends on the conduct and jurisdiction.',
     link: 'https://www.ftc.gov/business-guidance/blog/2024/02/fighting-back-against-harmful-voice-cloning'
   },
   {
@@ -58,6 +62,7 @@ const incidentReports = [
     source: 'Information Commissioner’s Office',
     title: 'A data breach happens. What are an organization’s next steps?',
     summary: 'A concise guide to breach assessment, notification duties and preserving a clear audit trail.',
+    aiSummary: 'After a breach, organizations need to assess the incident and determine whether notification duties apply. Reporting thresholds and deadlines depend on local law.',
     link: 'https://ico.org.uk/for-organisations/report-a-breach/'
   },
   {
@@ -67,6 +72,7 @@ const incidentReports = [
     source: 'Cybersecurity and Infrastructure Security Agency',
     title: 'Incident response starts before an incident',
     summary: 'Preparation and reporting guidance for organizations strengthening their response plans.',
+    aiSummary: 'Planning and response procedures can help organizations handle cyber incidents. Reporting and response obligations vary by sector and jurisdiction.',
     link: 'https://www.cisa.gov/topics/cyber-threats-and-advisories'
   }
 ];
@@ -110,9 +116,11 @@ function App() {
     return incidentReports.filter(report =>
       (incidentTopic === 'All signals' || report.category === incidentTopic) &&
       (!savedOnly || savedReports.includes(report.id)) &&
-      (!q || `${report.title} ${report.summary} ${report.category} ${report.source}`.toLowerCase().includes(q))
+      (!q || `${report.title} ${report.summary} ${report.aiSummary} ${report.category} ${report.source}`.toLowerCase().includes(q))
     );
   }, [incidentTopic, query, savedOnly, savedReports]);
+  const spotlightReport = filteredReports[0];
+  const radarReports = filteredReports.slice(1, 4);
 
   function navigate(next) {
     setPage(next);
@@ -152,9 +160,8 @@ function App() {
           <button className="icon-button desktop-icon" onClick={() => document.getElementById('incident-search')?.focus()} aria-label="Search threat briefings">
             <Search size={18} />
           </button>
-          <button className="icon-button desktop-icon" onClick={() => { setSavedOnly(true); document.getElementById('incident-feed')?.scrollIntoView({ behavior: 'smooth' }); }} aria-label={`Open saved reports: ${savedReports.length}`}>
-            <Bookmark size={17} />
-            {savedReports.length > 0 && <span className="saved-count">{savedReports.length}</span>}
+          <button className="saved-link desktop-icon" onClick={() => { setSavedOnly(true); document.getElementById('incident-feed')?.scrollIntoView({ behavior: 'smooth' }); }} aria-label={`Open saved reports: ${savedReports.length}`}>
+            Saved{savedReports.length > 0 && <span className="saved-total">{savedReports.length}</span>}
           </button>
           <button className="icon-button" onClick={() => setDark(v => !v)} aria-label="Toggle theme">
             {dark ? <Sun size={18} /> : <Moon size={18} />}
@@ -186,31 +193,58 @@ function App() {
                   <button key={topic} className={incidentTopic === topic ? 'selected' : ''} onClick={() => setIncidentTopic(topic)}>{topic}</button>
                 ))}
               </div>
-              <div className="featured-layout">
-                <article className="feature-report">
-                  <div className="feature-copy">
-                    <div className="report-meta"><span>{incidentReports[0].category}</span><time>{incidentReports[0].date}</time><span>{incidentReports[0].source}</span></div>
-                    <h2>{incidentReports[0].title}</h2>
-                    <p>{incidentReports[0].summary}</p>
-                    <a className="read-brief" href={incidentReports[0].link} target="_blank" rel="noreferrer">Read the briefing <ArrowRight size={16} /></a>
-                  </div>
-                  <a className="feature-image" href={incidentReports[0].link} target="_blank" rel="noreferrer" aria-label="Open official cybercrime resources">
-                    <span>THREAT FILE 01</span>
-                    <span className="image-caption">Illustration · Threatline</span>
-                  </a>
-                </article>
-                <aside className="dispatches">
-                  <h2>From the desk</h2>
-                  {incidentReports.slice(1, 4).map(report => (
-                    <article className="dispatch-card" key={report.id}>
-                      <div className="report-meta"><span>{report.category}</span><time>{report.date}</time></div>
-                      <h3><a href={report.link} target="_blank" rel="noreferrer">{report.title}</a></h3>
-                      <p>{report.source}</p>
-                    </article>
-                  ))}
-                  <a className="more-link" href="#incident-feed">Explore the threat feed <ArrowRight size={15} /></a>
-                </aside>
+              <div className="signal-context" aria-live="polite">
+                <span className="section-kicker">Signal index</span>
+                <span>{filteredReports.length} matching {filteredReports.length === 1 ? 'signal' : 'signals'}</span>
+                <span className="signal-context-topic">{incidentTopic === 'All signals' ? 'All topics' : incidentTopic}</span>
               </div>
+              {spotlightReport ? (
+                <div className="featured-layout">
+                  <article className="feature-report">
+                    <div className="feature-copy">
+                      <div className="report-meta"><span>{spotlightReport.category}</span><time>{spotlightReport.date}</time><span>{spotlightReport.source}</span></div>
+                      <h2>{spotlightReport.title}</h2>
+                      <p>{spotlightReport.summary}</p>
+                      <a className="read-brief" href={spotlightReport.link} target="_blank" rel="noreferrer">Read the briefing <ArrowRight size={16} /></a>
+                      <section className="ai-summary" aria-label="Prewritten AI summary">
+                        <div className="ai-summary-heading"><Sparkles size={14} /><span>AI summary</span><small>STATIC EDITION</small></div>
+                        <p>{spotlightReport.aiSummary}</p>
+                        <small className="ai-summary-note">Prewritten sample, not generated live. Verify claims using the linked official source.</small>
+                      </section>
+                    </div>
+                    {spotlightReport.image && (
+                      <a className="feature-image" href={spotlightReport.link} target="_blank" rel="noreferrer" aria-label={`Open source for ${spotlightReport.title}`}>
+                        <span>THREAT FILE 01</span>
+                        <span className="image-caption">Illustration · Threatline</span>
+                      </a>
+                    )}
+                  </article>
+                  <aside className="dispatches">
+                    <h2>On the radar</h2>
+                    {radarReports.length ? radarReports.map((report, index) => (
+                      <article className="dispatch-card" key={report.id}>
+                        <span className="dispatch-index" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+                        <div className="dispatch-copy">
+                          <div className="report-meta"><span>{report.category}</span><time>{report.date}</time></div>
+                          <h3><a href={report.link} target="_blank" rel="noreferrer">{report.title}</a></h3>
+                          <div className="dispatch-ai-summary">
+                            <small>AI summary · static</small>
+                            <p>{report.aiSummary}</p>
+                          </div>
+                          <small className="dispatch-source">{report.source}</small>
+                        </div>
+                      </article>
+                    )) : <p className="dispatch-empty">No other signals match this view.</p>}
+                    <a className="more-link" href="#incident-feed">Browse all signals <ArrowRight size={15} /></a>
+                  </aside>
+                </div>
+              ) : (
+                <div className="signal-empty" role="status">
+                  <span className="section-kicker">No matching signals</span>
+                  <p>Try another topic or reset your search to see more cybercrime briefings.</p>
+                  <button className="reset-signals" onClick={() => { setIncidentTopic('All signals'); setQuery(''); setSavedOnly(false); }}>Reset filters <ArrowRight size={14} /></button>
+                </div>
+              )}
             </section>
 
             <section className="content-section report-research-layout" id="incident-feed">
@@ -240,10 +274,10 @@ function App() {
               </div>
               <aside className="legal-research">
                 <h2>Explore the law</h2>
-                <button onClick={() => navigate('countries')}><Landmark size={20} /><span><b>Law Explorer</b><small>Legislation across jurisdictions</small></span><ArrowUpRight size={16} /></button>
+                <button onClick={() => navigate('countries')}><Landmark size={20} /><span><b>Jurisdictions</b><small>Legislation across countries</small></span><ArrowUpRight size={16} /></button>
                 <button onClick={() => navigate('compare')}><Scale size={20} /><span><b>Compare penalties</b><small>Read statutes side by side</small></span><ArrowUpRight size={16} /></button>
-                <button onClick={() => navigate('legislation')}><Clock3 size={20} /><span><b>Legislative Tracker</b><small>Proposals and commencement dates</small></span><ArrowUpRight size={16} /></button>
-                <button onClick={() => navigate('crimes')}><FileSearch size={20} /><span><b>Offence directory</b><small>Browse cybercrime topics</small></span><ArrowUpRight size={16} /></button>
+                <button onClick={() => navigate('legislation')}><Clock3 size={20} /><span><b>Legislation Watch</b><small>Proposals and commencement dates</small></span><ArrowUpRight size={16} /></button>
+                <button onClick={() => navigate('crimes')}><FileSearch size={20} /><span><b>Offence Index</b><small>Browse cybercrime topics</small></span><ArrowUpRight size={16} /></button>
               </aside>
             </section>
           </>
