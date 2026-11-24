@@ -1,8 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 import { rateLimit } from 'express-rate-limit';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 
 const app = express();
 const allowedOrigins = new Set(
@@ -114,10 +112,4 @@ app.use((error, _req, res, next) => {
   return next(error);
 });
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const dist = path.join(__dirname, '..', 'dist');
-app.use(express.static(dist));
-app.use((_req, res) => res.sendFile(path.join(dist, 'index.html')));
-
-const port = process.env.PORT || 3001;
-app.listen(port, () => console.log(`CyberLex API and app listening on port ${port}`));
+export default app;
