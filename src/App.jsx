@@ -2,13 +2,13 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   Search, Scale, Sparkles, ShieldCheck, ArrowUpRight, ArrowRight,
   ChevronDown, Menu, X, Sun, Moon, Database, CircleAlert,
-  ExternalLink, CheckCircle2, Clock3, BookOpen, Send, Filter,
+  ExternalLink, CheckCircle2, Clock3, Filter,
   Bookmark, CalendarDays, FileSearch, Landmark
 } from 'lucide-react';
 
 const navItems = [
   ['Incidents', 'home'], ['Law Explorer', 'countries'], ['Compare', 'compare'],
-  ['Legislative Tracker', 'legislation'], ['AI & Cybercrime', 'ai'], ['AI Research', 'research']
+  ['Legislative Tracker', 'legislation'], ['AI & Cybercrime', 'ai']
 ];
 
 const incidentTopics = ['All signals', 'Ransomware', 'Fraud', 'AI & deepfakes', 'Law enforcement', 'Data breach', 'Cybersecurity'];
@@ -84,12 +84,6 @@ function App() {
   const [proposals, setProposals] = useState([]);
   const [selectedCountries, setSelectedCountries] = useState(['IN', 'US', 'GB']);
   const [comparison, setComparison] = useState([]);
-  const [researchText, setResearchText] = useState('');
-  const [researchUrl, setResearchUrl] = useState('');
-  const [researchResult, setResearchResult] = useState(null);
-  const [researchError, setResearchError] = useState('');
-  const [researchLoading, setResearchLoading] = useState(false);
-  const [researchConsent, setResearchConsent] = useState(false);
 
   useEffect(() => {
     document.documentElement.dataset.theme = dark ? 'dark' : 'light';
@@ -138,30 +132,6 @@ function App() {
       : [...previous, id]);
   }
 
-  async function summarize(event) {
-    event.preventDefault();
-    setResearchError('');
-    setResearchResult(null);
-    setResearchLoading(true);
-    try {
-      const response = await fetch('/api/research/summarize', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: researchText, url: researchUrl, consent: researchConsent })
-      });
-      const result = await response.json();
-      if (!response.ok) {
-        setResearchError(result.error || 'The summary could not be generated.');
-        return;
-      }
-      setResearchResult(result);
-    } catch {
-      setResearchError('Could not reach the research service. Check the connection and try again.');
-    } finally {
-      setResearchLoading(false);
-    }
-  }
-
   return (
     <div className="app-shell">
       <header className="topbar">
@@ -172,7 +142,7 @@ function App() {
 
         <nav className={mobileOpen ? 'nav open' : 'nav'} aria-label="Main navigation">
           {navItems.map(([label, key]) => (
-            <button key={key} data-page={key} className={page === key ? 'active' : ''} onClick={() => navigate(key)}>
+            <button key={key} className={page === key ? 'active' : ''} onClick={() => navigate(key)}>
               {label}
             </button>
           ))}
@@ -188,9 +158,6 @@ function App() {
           </button>
           <button className="icon-button" onClick={() => setDark(v => !v)} aria-label="Toggle theme">
             {dark ? <Sun size={18} /> : <Moon size={18} />}
-          </button>
-          <button className="research-button" onClick={() => navigate('research')}>
-            <Sparkles size={16} /> AI Research
           </button>
           <button className="menu-button" onClick={() => setMobileOpen(v => !v)} aria-label="Menu">
             {mobileOpen ? <X size={22} /> : <Menu size={22} />}
@@ -221,16 +188,16 @@ function App() {
               </div>
               <div className="featured-layout">
                 <article className="feature-report">
-                  <a className="feature-image" href={incidentReports[0].link} target="_blank" rel="noreferrer" aria-label="Open official cybercrime resources">
-                    <span>THREAT FILE 01</span>
-                    <span className="image-caption">Illustration · Threatline</span>
-                  </a>
                   <div className="feature-copy">
                     <div className="report-meta"><span>{incidentReports[0].category}</span><time>{incidentReports[0].date}</time><span>{incidentReports[0].source}</span></div>
                     <h2>{incidentReports[0].title}</h2>
                     <p>{incidentReports[0].summary}</p>
                     <a className="read-brief" href={incidentReports[0].link} target="_blank" rel="noreferrer">Read the briefing <ArrowRight size={16} /></a>
                   </div>
+                  <a className="feature-image" href={incidentReports[0].link} target="_blank" rel="noreferrer" aria-label="Open official cybercrime resources">
+                    <span>THREAT FILE 01</span>
+                    <span className="image-caption">Illustration · Threatline</span>
+                  </a>
                 </article>
                 <aside className="dispatches">
                   <h2>From the desk</h2>
@@ -272,12 +239,11 @@ function App() {
                 <p className="editorial-note">Editorial research briefs; consult linked official sources for primary information.</p>
               </div>
               <aside className="legal-research">
-                <h2>Research tools</h2>
+                <h2>Explore the law</h2>
                 <button onClick={() => navigate('countries')}><Landmark size={20} /><span><b>Law Explorer</b><small>Legislation across jurisdictions</small></span><ArrowUpRight size={16} /></button>
                 <button onClick={() => navigate('compare')}><Scale size={20} /><span><b>Compare penalties</b><small>Read statutes side by side</small></span><ArrowUpRight size={16} /></button>
                 <button onClick={() => navigate('legislation')}><Clock3 size={20} /><span><b>Legislative Tracker</b><small>Proposals and commencement dates</small></span><ArrowUpRight size={16} /></button>
                 <button onClick={() => navigate('crimes')}><FileSearch size={20} /><span><b>Offence directory</b><small>Browse cybercrime topics</small></span><ArrowUpRight size={16} /></button>
-                <button onClick={() => navigate('research')}><Sparkles size={20} /><span><b>Research assistant</b><small>Summarize legal documents</small></span><ArrowUpRight size={16} /></button>
               </aside>
             </section>
           </>
@@ -384,43 +350,6 @@ function App() {
           </>
         )}
 
-        {page === 'research' && (
-          <>
-            <PageHeader kicker="AI RESEARCH WORKSPACE" title="Source-grounded legal research" copy="Summarize legislation and legal documents while preserving provisions, citations and uncertainty." />
-            <section className="content-section research-layout">
-              <form className="research-form" onSubmit={summarize}>
-                <label htmlFor="research-text">Paste legal text or a document excerpt</label>
-                <textarea id="research-text" value={researchText} onChange={e => setResearchText(e.target.value)} placeholder="Paste the source text to summarize..." required />
-                <label htmlFor="research-url">Official source URL <span className="optional-label">optional citation</span></label>
-                <input id="research-url" type="url" value={researchUrl} onChange={e => setResearchUrl(e.target.value)} placeholder="https://legislation.gov..." />
-                <p className="source-note">The URL is included as a citation only; its contents are not fetched. Paste the relevant source text above.</p>
-                <label className="consent-label">
-                  <input type="checkbox" checked={researchConsent} onChange={e => setResearchConsent(e.target.checked)} required />
-                  <span>I agree to send this text to Google Gemini. I have removed confidential information.</span>
-                </label>
-                <button className="primary-button" type="submit" disabled={researchLoading || !researchConsent}>
-                  <Sparkles size={16} /> {researchLoading ? 'Summarizing...' : 'Generate summary'}
-                </button>
-                <p className="safe-note"><ShieldCheck size={14} /> AI output is unverified. Check every claim against the official source.</p>
-              </form>
-              <aside className="research-output">
-                <div className="output-heading"><BookOpen size={18} /><span>Research result</span></div>
-                {researchError ? (
-                  <div className="research-error" role="alert"><CircleAlert size={18} /><p>{researchError}</p></div>
-                ) : researchResult ? (
-                  <div className="result">
-                    <span className="not-verified"><CircleAlert size={14} /> Verification required</span>
-                    <p>{researchResult.summary}</p>
-                    {researchResult.source && <a href={researchResult.source} target="_blank" rel="noreferrer">Open source <ExternalLink size={14} /></a>}
-                    <small>{researchResult.caution}</small>
-                  </div>
-                ) : (
-                  <div className="empty-output"><Send size={28} /><p>Your source-grounded summary will appear here.</p><small>Summarizes text you provide; sources are not independently verified.</small></div>
-                )}
-              </aside>
-            </section>
-          </>
-        )}
       </main>
 
       <footer>
